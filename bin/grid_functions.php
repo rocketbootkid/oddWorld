@@ -104,19 +104,22 @@ function drawGrid($grid_id) {
 			echo "<tr>";
 		}
 		
-		# Forest
-		if ($square['square_type'] == 'forest') {
+		if ($square['square_type'] == 'forest') { # Forest
 			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=clear&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Clear Forest'></a>";
-		} elseif ($square['square_type'] == 'land') {
+		} elseif ($square['square_type'] == 'land') { # Land
 			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=farm&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm'></a>";
-		} elseif ($square['square_type'] == 'farm') {
+		} elseif ($square['square_type'] == 'farm') { # Farm
 			$farm_name = getFeatureName($square['square_id']);
-			echo "<td><a href=''><img src='../images/" . $square['square_type'] . ".png' title='" . $farm_name . "'></a>";
-		} else {
+			echo "<td><a href='farm.php?square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View " . $farm_name . "'></a>";
+		} elseif ($square['square_type'] == 'mountain') { # Mountain
+			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine'></a>";
+		} elseif ($square['square_type'] == 'mine') { # Mine
+			$mine_name = getFeatureName($square['square_id']);
+			echo "<td><a href='mine.php?square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View " . $mine_name . "'></a>";
+		} else { # Nothing special
 			echo "<td><a href=''><img src='../images/" . $square['square_type'] . ".png' title='" . $square['square_x'] . "," . $square['square_y'] . ": " . $square['square_type'] . "'></a>";
 		}
-				
-		
+
 		if ($square['square_y'] == $columns) {
 			echo "</tr>";
 		}			
@@ -185,6 +188,44 @@ function createFarm($square_id) {
 	
 }
 
+function createMine($square_id) {
+	
+	# This function will create a mine
+	writeLog("createMine(): Square ID: " . $square_id);
+	
+	$square_type = getSquareType($square_id);
+	writeLog("createMine(): Square Type: " . $square_type);
+	
+	if ($square_type == "mountain") {
+	
+		$dml = "UPDATE oddworld.square SET square_type = 'mine' WHERE square_id = " . $square_id . ";";
+		$status = doInsert($dml);
+		if ($status == TRUE) {
+			writeLog("createMine(): mine created!");
+		} else {
+			writeLog("createMine(): ERROR: mine not created!");
+		}
+			
+	} else {
+		writeLog("createMine(): ERROR: Square ID " . $square_id . " is not a mountain square!");
+	}	
+	
+	# Create mine feature
+	$feature_name = generateFeatureName('mine');
+	$arrVariants = array('Gold', 'Silver', 'Coal', 'Iron', 'Copper', 'Tin');
+	srand();
+	$variant = $arrVariants[rand(0, 5)];
+		
+	$dml = "INSERT INTO oddworld.feature (feature_type, feature_name, square_id, feature_variant) VALUES ('mine', '" . $feature_name . "', " . $square_id . ", '" . $variant . "');";
+	$status = doInsert($dml);
+	if ($status == TRUE) {
+		writeLog("createMine(): mine feature created!");
+	} else {
+		writeLog("createMine(): ERROR: mine feature not created!");
+	}
+	
+}
+
 function generateFeatureName($feature_type) {
 	
 	#HEAD:Generates a feature name
@@ -216,7 +257,7 @@ function generateFeatureName($feature_type) {
 		
 	}
 	
-	$name = $name . " Farm";
+	$name = $name . " " . $feature_type;
 	
 	writeLog("generateFeatureName(): Name: " . $name);
 	
@@ -248,5 +289,26 @@ function getFeatureName($square_id) {
 		
 }
 
+function featureList($world_id) {
+	
+	# This function will return the name of the feature at the provided square
+	writeLog("featureList()");	
+	
+	$text = "";
+	
+	$sql = "SELECT feature_name, feature.square_id, square_x, square_y, feature_type, feature_variant FROM oddworld.feature, oddworld.square, oddworld.grid WHERE feature.square_id = square.square_id AND square.grid_id = grid.grid_id AND grid.grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	
+	$text = "<table cellpadding=3 cellspacing=0 border=1>";
+	
+	foreach ($results as $feature) {		
+		$text = $text . "<tr><td><a href='" . $feature['feature_type'] . ".php?square=" . $feature['square_id'] . "'>" . $feature['feature_name'] . "</a> [" . $feature['feature_variant'] . "] (" . $feature['square_x'] . ":" . $feature['square_y'] . ")</tr>";		
+	}
+	
+	$text = $text . "</table>";
+	
+	return $text;
+	
+}
 
 ?>

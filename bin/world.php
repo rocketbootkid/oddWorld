@@ -1,3 +1,11 @@
+<html>
+
+<head>
+<title>OddWorld - World</title>
+</head>
+
+<body>
+
 <?php
 
 	include('mysql_functions.php');
@@ -11,6 +19,8 @@
 			clearForest($_GET['square']);
 		} elseif ($_GET['action'] == 'farm') {
 			createFarm($_GET['square']);
+		} elseif ($_GET['action'] == 'mine') {
+			createMine($_GET['square']);
 		}
 	}	
 	
@@ -20,6 +30,12 @@
 		echo "Select a world to display.";
 	}
 	
+	echo featureList($_GET['world']);
+	
 	displayLog();
 
 ?>
+
+</body>
+
+</html>

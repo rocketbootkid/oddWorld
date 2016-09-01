@@ -19,4 +19,5 @@ CREATE TABLE `oddworld`.`feature` (
   `feature_type` VARCHAR(45) NULL,
   `feature_name` VARCHAR(45) NULL,
   `square_id` INT NULL,
+  `feature_variant` VARCHAR(45),
   PRIMARY KEY (`feature_id`));
