@@ -76,13 +76,13 @@ function createDatabase() {
 	$ddl = "USE `oddworld`;";
 	$status = mysqli_query($connection, $ddl);
 
-	$ddl = "CREATE TABLE `oddworld`.`grid` (`grid_id` INT NOT NULL AUTO_INCREMENT, `grid_type` VARCHAR(45) NULL, `grid_size` INT NULL, `grid_name` VARCHAR(45) NULL, PRIMARY KEY (`grid_id`));";
+	$ddl = "CREATE TABLE `oddworld`.`grid` (`grid_id` INT NOT NULL AUTO_INCREMENT, `grid_type` VARCHAR(45) NULL, `grid_size` INT NULL, `grid_name` VARCHAR(45) NULL, `grid_money` INT NULL, PRIMARY KEY (`grid_id`));";
 	$status = mysqli_query($connection, $ddl);
 	
 	$ddl = "CREATE TABLE `oddworld`.`square` (`square_id` INT NOT NULL AUTO_INCREMENT, `grid_id` INT NULL, `grid_x` INT NULL, `grid_y` INT NULL, `grid_type` VARCHAR(45) NULL, PRIMARY KEY (`square_id`));";
 	$status = mysqli_query($connection, $ddl);
 	
-	$ddl = "CREATE TABLE `oddworld`.`feature` ( `feature_id` INT NOT NULL AUTO_INCREMENT, `feature_type` VARCHAR(45) NULL, `feature_name` VARCHAR(45) NULL, `square_id` INT NULL, `feature_variant` VARCHAR(45) NULL, PRIMARY KEY (`feature_id`));";
+	$ddl = "CREATE TABLE `oddworld`.`feature` ( `feature_id` INT NOT NULL AUTO_INCREMENT, `feature_type` VARCHAR(45) NULL, `feature_name` VARCHAR(45) NULL, `square_id` INT NULL, `feature_variant` VARCHAR(45) NULL, `feature_size` INT NULL, PRIMARY KEY (`feature_id`));";
 	$status = mysqli_query($connection, $ddl);
 	
 	mysqli_close($connection);

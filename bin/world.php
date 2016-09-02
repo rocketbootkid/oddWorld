@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>OddWorld - World</title>
+<title>OddWorld - World <?php echo $_GET['world']; ?></title>
 </head>
 
 <body>
@@ -10,10 +10,10 @@
 
 	include('mysql_functions.php');
 	include('grid_functions.php');
+	include('feature_functions.php');
 	include('log_functions.php');
-	
-	#generateNewGrid("world", 50, "world10");
-	
+	include('tick_functions.php');
+
 	if (isset($_GET['action']) && isset($_GET['square'])) {
 		if ($_GET['action'] == 'clear') {
 			clearForest($_GET['square']);
@@ -25,12 +25,16 @@
 	}	
 	
 	if (isset($_GET['world'])) {
-		drawGrid($_GET['world']);
+		echo "<table cellpadding=5 cellspacing=0 border=0 align=center>";
+		echo "<tr><td valign=top>";
+		echo featureList($_GET['world']);
+		echo "<td valign=top>";
+		echo drawGrid($_GET['world']);
+		echo "</tr>";
+		echo "</table>";
 	} else {
 		echo "Select a world to display.";
 	}
-	
-	echo featureList($_GET['world']);
 	
 	displayLog();
 

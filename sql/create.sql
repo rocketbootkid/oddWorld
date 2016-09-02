@@ -3,6 +3,7 @@ CREATE TABLE `grid` (
   `grid_type` varchar(45) DEFAULT NULL,
   `grid_size` int(11) DEFAULT NULL,
   `grid_name` varchar(45) DEFAULT NULL,
+  `grid_money` INT NULL,
   PRIMARY KEY (`grid_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -20,4 +21,5 @@ CREATE TABLE `oddworld`.`feature` (
   `feature_name` VARCHAR(45) NULL,
   `square_id` INT NULL,
   `feature_variant` VARCHAR(45),
+  `feature_size` INT NULL,
   PRIMARY KEY (`feature_id`));
