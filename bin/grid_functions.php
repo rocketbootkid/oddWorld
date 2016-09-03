@@ -106,16 +106,31 @@ function drawGrid($grid_id) {
 		
 		if ($square['square_type'] == 'forest') { # Forest
 			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=clear&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Clear Forest'></a>";
+		
 		} elseif ($square['square_type'] == 'land') { # Land
-			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=farm&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm'></a>";
+			# Determine if you can afford a farm
+			if (canIAffordIt('farm', $_GET['world']) == 1) {
+				echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=farm&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm'></a>";
+			} else {
+				echo "<td><img src='../images/" . $square['square_type'] . ".png' title='Can't afford farm!'>";
+			}
+		
 		} elseif ($square['square_type'] == 'farm') { # Farm
 			$farm_name = getFeatureName($square['square_id']);
 			echo "<td><a href='farm.php?world=" . $_GET['world'] . "&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View " . $farm_name . "'></a>";
+		
 		} elseif ($square['square_type'] == 'mountain') { # Mountain
-			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine'></a>";
+			# Determine if you can afford a mine
+			if (canIAffordIt('mine', $_GET['world']) == 1) {
+				echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine'></a>";
+			} else {
+				echo "<td><img src='../images/" . $square['square_type'] . ".png' title='Cannot afford mine!'>";
+			}
+			
 		} elseif ($square['square_type'] == 'mine') { # Mine
 			$mine_name = getFeatureName($square['square_id']);
 			echo "<td><a href='mine.php?world=" . $_GET['world'] . "&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View " . $mine_name . "'></a>";
+		
 		} else { # Nothing special
 			echo "<td><a href=''><img src='../images/" . $square['square_type'] . ".png' title='" . $square['square_x'] . "," . $square['square_y'] . ": " . $square['square_type'] . "'></a>";
 		}
@@ -139,6 +154,28 @@ function getSquareType($square_id) {
 	$results = doSearch($sql);
 	
 	return $results[0]['square_type'];
+	
+}
+
+function getCurrentFunds($world_id) {
+
+	# This function will return the current funds for the world
+	writeLog("getCurrentFunds()");	
+	
+	$sql = "SELECT grid_money FROM oddworld.grid WHERE grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	
+	return $results[0]['grid_money'];
+
+}
+
+function addFunds($world_id, $amount) {
+	
+	# This function will adds funds to the world
+	writeLog("addFunds()");
+	
+	$dml = "UPDATE oddworld.grid SET grid_money = grid_money + " . $amount . " WHERE world_id = " . $world_id . ";";
+	$status = doInsert($dml);
 	
 }
 

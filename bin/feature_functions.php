@@ -1,6 +1,6 @@
 <?php
 
-function clearForest($square_id) {
+function clearForest($square_id, $world_id) {
 	
 	# This function will clear a forest square
 	writeLog("clearForest(): Square ID: " . $square_id);
@@ -10,21 +10,20 @@ function clearForest($square_id) {
 	
 	if ($square_type == "forest") {
 	
+		# Change square type
 		$dml = "UPDATE oddworld.square SET square_type = 'land' WHERE square_id = " . $square_id . ";";
 		$status = doInsert($dml);
-		if ($status == TRUE) {
-			writeLog("clearForest(): Square ID " . $square_id . " cleared!");
-		} else {
-			writeLog("clearForest(): ERROR: Square ID " . $square_id . " has not been cleared!");
-		}
-			
+
+		# Add funds
+		addFunds($world_id, 10);
+		
 	} else {
 		writeLog("clearForest(): ERROR: Square ID " . $square_id . " is not a forest square!");
 	}	
 	
 }
 
-function createFarm($square_id) {
+function createFarm($square_id, $world_id) {
 	
 	# This function will create a farm
 	writeLog("createFarm(): Square ID: " . $square_id);
@@ -41,24 +40,27 @@ function createFarm($square_id) {
 		} else {
 			writeLog("createFarm(): ERROR: Farm not created!");
 		}
+		
+		# Create farm feature
+		$feature_name = generateFeatureName('farm');
+		$dml = "INSERT INTO oddworld.feature (feature_type, feature_name, square_id) VALUES ('farm', '" . $feature_name . "', " . $square_id . ");";
+		$status = doInsert($dml);
+		if ($status == TRUE) {
+			writeLog("createFarm(): Farm feature created!");
+		} else {
+			writeLog("createFarm(): ERROR: Farm feature not created!");
+		}
+		
+		# Reduce funds based on number of features of this type already in existence
+		buyFeature('farm', $world_id);
 			
 	} else {
 		writeLog("createFarm(): ERROR: Square ID " . $square_id . " is not a land square!");
 	}	
 	
-	# Create farm feature
-	$feature_name = generateFeatureName('farm');
-	$dml = "INSERT INTO oddworld.feature (feature_type, feature_name, square_id) VALUES ('farm', '" . $feature_name . "', " . $square_id . ");";
-	$status = doInsert($dml);
-	if ($status == TRUE) {
-		writeLog("createFarm(): Farm feature created!");
-	} else {
-		writeLog("createFarm(): ERROR: Farm feature not created!");
-	}
-	
 }
 
-function createMine($square_id) {
+function createMine($square_id, $world_id) {
 	
 	# This function will create a mine
 	writeLog("createMine(): Square ID: " . $square_id);
@@ -70,31 +72,23 @@ function createMine($square_id) {
 	
 		$dml = "UPDATE oddworld.square SET square_type = 'mine' WHERE square_id = " . $square_id . ";";
 		$status = doInsert($dml);
-		if ($status == TRUE) {
-			writeLog("createMine(): mine created!");
-		} else {
-			writeLog("createMine(): ERROR: mine not created!");
-		}
+		
+		# Create mine feature
+		$feature_name = generateFeatureName('mine');
+		$arrVariants = array('Gold', 'Silver', 'Coal', 'Iron', 'Copper', 'Tin');
+		srand();
+		$variant = $arrVariants[rand(0, 5)];
+		$feature_size = rand(100, 400);	
+		$dml = "INSERT INTO oddworld.feature (feature_type, feature_name, square_id, feature_variant, feature_size) VALUES ('mine', '" . $feature_name . "', " . $square_id . ", '" . $variant . "', " . $feature_size . ");";
+		$status = doInsert($dml);
+		
+		# Reduce funds based on number of features of this type already in existence
+		buyFeature('mine', $world_id);
 			
 	} else {
 		writeLog("createMine(): ERROR: Square ID " . $square_id . " is not a mountain square!");
 	}	
-	
-	# Create mine feature
-	$feature_name = generateFeatureName('mine');
-	$arrVariants = array('Gold', 'Silver', 'Coal', 'Iron', 'Copper', 'Tin');
-	srand();
-	$variant = $arrVariants[rand(0, 5)];
-	$feature_size = rand(200, 800);
-		
-	$dml = "INSERT INTO oddworld.feature (feature_type, feature_name, square_id, feature_variant, feature_size) VALUES ('mine', '" . $feature_name . "', " . $square_id . ", '" . $variant . "', " . $feature_size . ");";
-	$status = doInsert($dml);
-	if ($status == TRUE) {
-		writeLog("createMine(): mine feature created!");
-	} else {
-		writeLog("createMine(): ERROR: mine feature not created!");
-	}
-	
+
 }
 
 function displayMine($square_id, $world_id) {
@@ -217,6 +211,71 @@ function featureList($world_id) {
 	}
 	
 	return $text;
+	
+}
+
+function buyFeature($feature_type, $world_id) {
+	
+	# This function will handle purchasing of features
+	writeLog("buyFeature()");
+
+	$cost = calculateFeatureCost($feature_type, $world_id);
+	
+	# Determine if enough funds exist
+	$current_funds = getCurrentFunds($world_id);
+	
+	if ($current_funds >= $cost) {
+		# Update funds
+		$dml = "UPDATE oddworld.grid SET grid_money = grid_money - " . $cost . " WHERE world_id = " . $world_id . ";";
+		$status = doInsert($dml);	
+	}
+	
+}
+
+function calculateFeatureCost($feature_type, $world_id) {
+
+	# This function will determine the cost of buying next feature
+	writeLog("buyFeature()");
+
+	$feature_count = countFeatures($feature_type, $world_id);
+	
+	if ($feature_type == 'farm') {
+		$cost = 200 + (10 * $feature_count);
+	} elseif ($feature_type == 'mine') {
+		$cost = 700 + (20 * $feature_count);
+	} else {
+		
+	}
+	
+	return $cost;
+	
+}
+
+function countFeatures($feature_type, $world_id) {
+	
+	# This function will count how many features there are in the world
+	writeLog("countFeatures()");
+
+	$sql = "SELECT count(*) FROM oddworld.feature, oddworld.square WHERE feature_type = '" . $feature_type . "' AND feature.square_id = square.square_id AND square.grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	
+	return $results[0]['count(*)'];
+	
+}
+
+function canIAffordIt($feature_type, $world_id) {
+
+	# This function will determine if you can afford something
+	writeLog("canIAffordIt()");
+
+	$cost = calculateFeatureCost($feature_type, $world_id);
+	$current_funds = getCurrentFunds($world_id);
+	
+	if ($current_funds >= $cost) {
+		return 1;
+	} else {
+		return 0;
+	}
 	
 }
 

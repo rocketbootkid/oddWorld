@@ -16,11 +16,11 @@
 
 	if (isset($_GET['action']) && isset($_GET['square'])) {
 		if ($_GET['action'] == 'clear') {
-			clearForest($_GET['square']);
+			clearForest($_GET['square'], $_GET['world']);
 		} elseif ($_GET['action'] == 'farm') {
-			createFarm($_GET['square']);
+			createFarm($_GET['square'], $_GET['world']);
 		} elseif ($_GET['action'] == 'mine') {
-			createMine($_GET['square']);
+			createMine($_GET['square'], $_GET['world']);
 		}
 	}	
 	

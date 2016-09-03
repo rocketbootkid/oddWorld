@@ -6,34 +6,36 @@
 	include('log_functions.php');
 	include('tick_functions.php');
 	
-	# Read / update / write new tick
-	tick();
-	
-	# Handle economic changes	
-	$arrPrices = generatePrices();
-	
-	
-	
-	
-	
-	# Handle random disasters that affect feature productivity
-	
-	# Handle increase of town population
-	
-	# Handle decrease of mine remaining
+	if (isset($_GET['world'])) {
+		
+		$world_id = $_GET['world'];
+		
+		# Read / update / write new tick
+		tick();
+		
+		# Handle economic changes	
+		$arrPrices = generatePrices();
+			
+		# Handle random disasters that affect feature productivity
+		
+		# Handle increase of town population
+		
+		# Handle decrease of mine remaining
 
-	
-	
-	# Handle income from remaining / working features
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
+		
+		# Handle income from remaining / working features
+		manageEconomy($arrPrices, $world_id);
+		
+		
+		
+		
+		
+		
+		
+	} else {
+		echo "Select World.";
+	}
 	
 	displayLog();
 	
