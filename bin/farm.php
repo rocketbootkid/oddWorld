@@ -13,6 +13,10 @@
 	include('feature_functions.php');
 	include('log_functions.php');
 	
+	if (isset($_GET['choice'])) {
+		chooseFarmType($_GET['square'], $_GET['world'], $_GET['choice']);
+	}
+	
 	if (isset($_GET['square'])) {
 		echo displayFarm($_GET['square'], $_GET['world']);
 	} else {

@@ -8,6 +8,7 @@ function tick() {
 	$current_tick = $time[0];
 	$new_tick = $current_tick + 1;
 	$GLOBALS['tick'] = $new_tick;
+	writeLog("tick(): New Tick: " . $new_tick);
 	$file = fopen('tick.txt', 'w');
 	fwrite($file, $new_tick);
 	fclose($file);
@@ -20,19 +21,21 @@ function currentTick() {
 	
 }
 
-function manageIncome() {
-	
-}
-
 function manageDisasters() {
 	
 }
 
 function managePopulation() {
 	
+	# increase population of towns by 1 up to 100
+	
 }
 
 function manageFeatureLife() {
+	
+	# Age farms until 20
+	
+	# Decrease life of all mines by 10
 	
 }
 
@@ -46,22 +49,28 @@ function manageEconomy($arrPrices, $world_id) {
 	# Get all farms whose life is at 20
 	$sql = "SELECT * FROM oddworld.feature, oddworld.square WHERE feature_size >= 20 AND feature_type = 'farm' AND square.square_id = feature.square_id AND square.grid_id = " . $world_id . ";";
 	$results = doSearch($sql);
+	writeLog("manageEconomy(): Working Farms: " . count($results));
 	
 	foreach ($results as $farm) {	
 		
-		$farm_type = $farm['feature_variant']; # Get the type of farm
+		$farm_type = strtolower($farm['feature_variant']); # Get the type of farm
 		$value = $arrResults[$farm_type]; # Get the current value of that crop
+		writeLog("manageEconomy(): " . $farm_type . ": " . $value);
+		
 		$income = $income + $value;	# add that to total income
 	}
 	
 	# Get all mines whose life is greater than 0;
 	$sql = "SELECT * FROM oddworld.feature, oddworld.square WHERE feature_size > 0 AND feature_type = 'mine' AND square.square_id = feature.square_id AND square.grid_id = " . $world_id . ";";
 	$results = doSearch($sql);
+	writeLog("manageEconomy(): Working Mines: " . count($results));
 	
 	foreach ($results as $mine) {	
 		
-		$mine_type = $mine['feature_variant']; # Get the type of mine
-		$value = $arrResults[$mine_type]; # Get the current value of that mineral
+		$mine_type = strtolower($mine['feature_variant']); # Get the type of mine
+		$value = $arrPrices[$mine_type]; # Get the current value of that mineral
+		writeLog("manageEconomy(): " . $mine_type . ": " . $value);
+		
 		$income = $income + $value;	# add that to total income
 	}
 	

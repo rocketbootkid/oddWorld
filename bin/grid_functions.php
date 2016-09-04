@@ -109,24 +109,15 @@ function drawGrid($grid_id) {
 		
 		} elseif ($square['square_type'] == 'land') { # Land
 			# Determine if you can afford a farm
-			if (canIAffordIt('farm', $_GET['world']) == 1) {
-				echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=farm&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm'></a>";
-			} else {
-				echo "<td><img src='../images/" . $square['square_type'] . ".png' title='Can't afford farm!'>";
-			}
+			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=farm&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm'></a>";
 		
 		} elseif ($square['square_type'] == 'farm') { # Farm
 			$farm_name = getFeatureName($square['square_id']);
 			echo "<td><a href='farm.php?world=" . $_GET['world'] . "&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View " . $farm_name . "'></a>";
 		
 		} elseif ($square['square_type'] == 'mountain') { # Mountain
-			# Determine if you can afford a mine
-			if (canIAffordIt('mine', $_GET['world']) == 1) {
-				echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine'></a>";
-			} else {
-				echo "<td><img src='../images/" . $square['square_type'] . ".png' title='Cannot afford mine!'>";
-			}
-			
+			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine'></a>";
+
 		} elseif ($square['square_type'] == 'mine') { # Mine
 			$mine_name = getFeatureName($square['square_id']);
 			echo "<td><a href='mine.php?world=" . $_GET['world'] . "&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View " . $mine_name . "'></a>";
@@ -174,7 +165,7 @@ function addFunds($world_id, $amount) {
 	# This function will adds funds to the world
 	writeLog("addFunds()");
 	
-	$dml = "UPDATE oddworld.grid SET grid_money = grid_money + " . $amount . " WHERE world_id = " . $world_id . ";";
+	$dml = "UPDATE oddworld.grid SET grid_money = grid_money + " . $amount . " WHERE grid_id = " . $world_id . ";";
 	$status = doInsert($dml);
 	
 }

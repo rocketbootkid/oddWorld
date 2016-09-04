@@ -22,12 +22,16 @@
 		} elseif ($_GET['action'] == 'mine') {
 			createMine($_GET['square'], $_GET['world']);
 		}
-	}	
+	}
+	
+	echo displayEvents();
 	
 	if (isset($_GET['world'])) {
 		echo "<table cellpadding=5 cellspacing=0 border=0 align=center>";
 		echo "<tr><td valign=top>";
 		echo featureList($_GET['world']);
+		echo "<p>Current Funds: " . getCurrentFunds($_GET['world']);
+		echo "<p><a href='world.php?world=" . $_GET['world'] . "'>Refresh</a>";
 		echo "<td valign=top>";
 		echo drawGrid($_GET['world']);
 		echo "</tr>";

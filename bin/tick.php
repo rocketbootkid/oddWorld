@@ -15,12 +15,18 @@
 		
 		# Handle economic changes	
 		$arrPrices = generatePrices();
-			
+		
+		# Handle farm maturity
+		
+		# Handle decrease of mine remaining
+		
 		# Handle random disasters that affect feature productivity
 		
 		# Handle increase of town population
 		
-		# Handle decrease of mine remaining
+		
+		
+		
 
 		
 		
