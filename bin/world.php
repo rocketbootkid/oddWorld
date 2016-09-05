@@ -32,6 +32,7 @@
 		echo featureList($_GET['world']);
 		echo "<p>Current Funds: " . getCurrentFunds($_GET['world']);
 		echo "<p><a href='world.php?world=" . $_GET['world'] . "'>Refresh</a>";
+		echo "<p><a href='tick.php?world=" . $_GET['world'] . "' target='_blank'>Tick Page</a>";
 		echo "<td valign=top>";
 		echo drawGrid($_GET['world']);
 		echo "</tr>";

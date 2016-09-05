@@ -47,7 +47,7 @@ function createFarm($square_id, $world_id) {
 		
 		# Create farm feature
 		$feature_name = generateFeatureName('farm');
-		$dml = "INSERT INTO oddworld.feature (feature_type, feature_name, square_id) VALUES ('farm', '" . $feature_name . "', " . $square_id . ");";
+		$dml = "INSERT INTO oddworld.feature (feature_type, feature_name, square_id, feature_size) VALUES ('farm', '" . $feature_name . "', " . $square_id . ", 0);";
 		$status = doInsert($dml);
 		if ($status == TRUE) {
 			writeLog("createFarm(): Farm feature created!");
@@ -60,6 +60,7 @@ function createFarm($square_id, $world_id) {
 			
 	} else {
 		writeLog("createFarm(): ERROR: Not a land square, or can't afford it.");
+		writeEvent("Farm not created! You can't afford it :-(");
 	}	
 	
 }
@@ -135,7 +136,7 @@ function displayFarm($square_id, $world_id) {
 	$text = $text . "<tr><td colspan=2 align=center><h2>" . $results[0]['feature_name'] . "</h2></tr>";
 	
 	if ($results[0]['feature_variant'] == "") {
-		$text = $text . "<tr><td>Choose Type<td><a href='" . $link . "&choice=sheep'>Sheep</a>, <a href='" . $link . "&choice=corn'>Corn</a>, <a href='" . $link . "&choice=dairy'>Dairy</a>, <a href='" . $link . "&choice=beef'>Beef</a>, <a href='" . $link . "&choice=wheat'>Wheat</a>, <a href='" . $link . "&choice=potato'>Potatoes</a>";
+		$text = $text . "<tr><td>Choose Type<td><a href='" . $link . "&choice=wool'>Sheep</a>, <a href='" . $link . "&choice=corn'>Corn</a>, <a href='" . $link . "&choice=milk'>Dairy</a>, <a href='" . $link . "&choice=beef'>Beef</a>, <a href='" . $link . "&choice=wheat'>Wheat</a>, <a href='" . $link . "&choice=potato'>Potatoes</a>";
 	} else {
 		$text = $text . "<tr><td>Type<td>" . ucwords($results[0]['feature_variant']) . "</tr>";
 	}
@@ -269,9 +270,9 @@ function calculateFeatureCost($feature_type, $world_id) {
 	$feature_count = countFeatures($feature_type, $world_id);
 	
 	if ($feature_type == 'farm') {
-		$cost = 200 + (10 * $feature_count);
+		$cost = 400 + (40 * $feature_count);
 	} elseif ($feature_type == 'mine') {
-		$cost = 700 + (20 * $feature_count);
+		$cost = 1000 + (100 * $feature_count);
 	} else {
 		
 	}

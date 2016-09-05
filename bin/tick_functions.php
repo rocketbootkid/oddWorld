@@ -21,7 +21,21 @@ function currentTick() {
 	
 }
 
-function manageDisasters() {
+function manageDisasters($world_id) {
+	
+	# Random Mine cave-ins
+	manageMineDisasters($world_id);
+	
+	# Random farm blight
+	manageFarmDisasters($world_id);
+	
+}
+
+function manageMineDisasters($world_id) {
+	
+}
+
+function manageFarmDisasters($world_id) {
 	
 }
 
@@ -31,11 +45,92 @@ function managePopulation() {
 	
 }
 
-function manageFeatureLife() {
+function manageFeatureLife($world_id) {
 	
 	# Age farms until 20
+	manageFarmLife($world_id);
 	
-	# Decrease life of all mines by 10
+	# Decrease life of all mines by 1
+	manageMineLife($world_id);
+	
+	# Land randomly turns back to forest
+	manageReforestation($world_id);
+	
+	# Increase size of towns by 1
+	
+	
+}
+
+function manageReforestation($world_id) {
+	
+	# This function will manage the reforestation of empty land
+	writeLog("manageReforestation()");	
+	
+	$sql = "SELECT square_id FROM oddworld.square WHERE square_type = 'land' AND grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	writeLog("manageReforestation(): Fallow land: " . count($results));
+	
+	foreach ($results as $land) {
+		
+		srand();
+		if (rand(1, 10) == 1) {
+		
+			$dml = "UPDATE oddworld.square SET square_type = 'forest' WHERE square_id = " . $land['square_id'] . ";";
+			$status = doInsert($dml);
+			if ($status == TRUE) {
+				writeLog("manageReforestation(): Forest grows back!");
+			} else {
+				writeLog("manageReforestation(): ERROR: Forest doesn't grow back!");
+			}		
+		
+		}
+		
+	}
+	
+}
+
+function manageFarmLife($world_id) {
+	
+	# This function will manage the maturing of farms
+	writeLog("manageFarmLife()");	
+	
+	$sql = "SELECT feature_id FROM oddworld.feature, oddworld.square WHERE feature_size < 20 AND feature_type = 'farm' AND square.square_id = feature.square_id AND square.grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	writeLog("manageEconomy(): Farms: " . count($results));
+	
+	foreach ($results as $farm) {
+		
+		$dml = "UPDATE oddworld.feature SET feature_size = feature_size + 1 WHERE feature_id = " . $farm['feature_id'] . ";";
+		$status = doInsert($dml);
+		if ($status == TRUE) {
+			writeLog("manageFarmLife(): Farm life updated!");
+		} else {
+			writeLog("manageFarmLife(): ERROR: Farm life not updated!");
+		}		
+		
+	}
+	
+}
+
+function manageMineLife($world_id) {
+	
+	# This function will manage the running out of mines
+	writeLog("manageMineLife()");	
+	$sql = "SELECT feature_id FROM oddworld.feature, oddworld.square WHERE feature_size > 0 AND feature_type = 'mine' AND square.square_id = feature.square_id AND square.grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	writeLog("manageMineLife(): Current Mines: " . count($results));
+	
+	foreach ($results as $farm) {
+		
+		$dml = "UPDATE oddworld.feature SET feature_size = feature_size - 1 WHERE feature_id = " . $farm['feature_id'] . ";";
+		$status = doInsert($dml);
+		if ($status == TRUE) {
+			writeLog("manageMineLife(): Mine life updated!");
+		} else {
+			writeLog("manageMineLife(): ERROR: Mine life not updated!");
+		}		
+		
+	}
 	
 }
 
@@ -54,7 +149,7 @@ function manageEconomy($arrPrices, $world_id) {
 	foreach ($results as $farm) {	
 		
 		$farm_type = strtolower($farm['feature_variant']); # Get the type of farm
-		$value = $arrResults[$farm_type]; # Get the current value of that crop
+		$value = $arrPrices[$farm_type]; # Get the current value of that crop
 		writeLog("manageEconomy(): " . $farm_type . ": " . $value);
 		
 		$income = $income + $value;	# add that to total income
@@ -86,31 +181,47 @@ function generatePrices() {
 	
 	$GLOBALS['tick'] = $GLOBALS['tick'] + 1;
 	
-	$arrPrices = array('wool' => floor(fluctuateResource(15, 50)),
-					'corn' => floor(fluctuateResource(20, 60)),
-					'milk' => floor(fluctuateResource(10, 40)),
-					'beef' => floor(fluctuateResource(20, 60)),
-					'wheat' => floor(fluctuateResource(15, 50)),
-					'potatoes' => floor(fluctuateResource(10, 40)),
-					'iron' => floor(fluctuateResource(10, 40)),
-					'coal' => floor(fluctuateResource(5, 30)),
-					'gold' => floor(fluctuateResource(50, 200)),
-					'silver' => floor(fluctuateResource(40, 150)),
-					'copper' => floor(fluctuateResource(30, 120)),
-					'tin' => floor(fluctuateResource(20, 80))
+	$arrPrices = array('wool' => floor(fluctuateResource(15, 50, 30)),
+					'corn' => floor(fluctuateResource(20, 60, 60)),
+					'milk' => floor(fluctuateResource(10, 40, 90)),
+					'beef' => floor(fluctuateResource(20, 60, 120)),
+					'wheat' => floor(fluctuateResource(15, 50, 150)),
+					'potato' => floor(fluctuateResource(10, 40, 180)),
+					'iron' => floor(fluctuateResource(10, 40, 210)),
+					'coal' => floor(fluctuateResource(5, 30, 240)),
+					'gold' => floor(fluctuateResource(50, 200, 270)),
+					'silver' => floor(fluctuateResource(40, 150, 300)),
+					'copper' => floor(fluctuateResource(30, 120, 330)),
+					'tin' => floor(fluctuateResource(20, 80, 0))
 				);
 	
 	return $arrPrices;
 }
 
 
-function fluctuateResource($min, $max) {
+function fluctuateResource($min, $max, $phase) {
 	
 	srand();
 	$offset = rand(-30, 30);
 	
-	return (($max - $min)/2 * (round(sin(deg2rad($GLOBALS['tick'] + $offset)), 2))) + ($max + $min)/2;
+	return (($max - $min)/2 * (round(sin(deg2rad($GLOBALS['tick'] + $offset + $phase)), 2))) + ($max + $min)/2;
 	
+}
+
+function logPrices($arrPrices) {
+	
+	$text = "";
+	
+	foreach ($arrPrices as $price) {
+		$text = $text . $price . ",";	
+	}
+	$text = substr($text, 0, strlen($text)-1);
+	$text = $text . "\n";
+	
+	$file = fopen('prices.log', 'a');
+	fwrite($file, $text);
+	fclose($file);
+		
 }
 
 
