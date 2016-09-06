@@ -4,12 +4,12 @@ $tick = 0;
 
 function tick() {
 	
-	$time = file('tick.txt');
+	$time = file('logs/tick.txt');
 	$current_tick = $time[0];
 	$new_tick = $current_tick + 1;
 	$GLOBALS['tick'] = $new_tick;
 	writeLog("tick(): New Tick: " . $new_tick);
-	$file = fopen('tick.txt', 'w');
+	$file = fopen('logs/tick.txt', 'w');
 	fwrite($file, $new_tick);
 	fclose($file);
 	
@@ -33,9 +33,57 @@ function manageDisasters($world_id) {
 
 function manageMineDisasters($world_id) {
 	
+	# This function will manage mine disasters
+	writeLog("manageMineDisasters()");	
+	
+	$sql = "SELECT feature_id FROM oddworld.feature, oddworld.square, oddworld.grid WHERE feature_type = 'mine' AND feature.square_id = square.square_id AND square.grid_id = grid.grid_id AND grid.grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	writeLog("manageMineDisasters(): Mines: " . count($results));
+	
+	foreach ($results as $mine) {
+		
+		srand();
+		if (rand(1, 20) == 1) {
+		
+			$dml = "UPDATE oddworld.feature SET feature_size = feature_size - 250 WHERE feature_id = " . $mine['feature_id'] . ";";
+			$status = doInsert($dml);
+			if ($status == TRUE) {
+				writeLog("manageMineDisasters(): Cave life reduced!");
+			} else {
+				writeLog("manageMineDisasters(): ERROR: Cave life not reduced!");
+			}		
+		
+		}
+		
+	}
+	
 }
 
 function manageFarmDisasters($world_id) {
+	
+	# This function will manage farm disasters
+	writeLog("manageFarmDisasters()");	
+	
+	$sql = "SELECT feature_id FROM oddworld.feature, oddworld.square, oddworld.grid WHERE feature_type = 'farm' AND feature.square_id = square.square_id AND square.grid_id = grid.grid_id AND grid.grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	writeLog("manageFarmDisasters(): Mines: " . count($results));
+	
+	foreach ($results as $farm) {
+		
+		srand();
+		if (rand(1, 50) == 1) {
+		
+			$dml = "UPDATE oddworld.feature SET feature_size = 0 WHERE feature_id = " . $farm['feature_id'] . ";";
+			$status = doInsert($dml);
+			if ($status == TRUE) {
+				writeLog("manageMineDisasters(): Farm life reduced!");
+			} else {
+				writeLog("manageMineDisasters(): ERROR: Farm life not reduced!");
+			}		
+		
+		}
+		
+	}
 	
 }
 
@@ -73,7 +121,7 @@ function manageReforestation($world_id) {
 	foreach ($results as $land) {
 		
 		srand();
-		if (rand(1, 10) == 1) {
+		if (rand(1, 40) == 1) {
 		
 			$dml = "UPDATE oddworld.square SET square_type = 'forest' WHERE square_id = " . $land['square_id'] . ";";
 			$status = doInsert($dml);
@@ -218,7 +266,7 @@ function logPrices($arrPrices) {
 	$text = substr($text, 0, strlen($text)-1);
 	$text = $text . "\n";
 	
-	$file = fopen('prices.log', 'a');
+	$file = fopen('logs/prices.log', 'a');
 	fwrite($file, $text);
 	fclose($file);
 		

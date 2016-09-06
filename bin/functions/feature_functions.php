@@ -215,22 +215,43 @@ function getFeatureName($square_id) {
 		
 }
 
-function featureList($world_id) {
+function featureList($world_id, $type) {
 	
 	# This function will return the name of the feature at the provided square
 	writeLog("featureList()");	
 	
 	$text = "";
 	
-	$sql = "SELECT feature_name, feature.square_id, square_x, square_y, feature_type, feature_variant FROM oddworld.feature, oddworld.square, oddworld.grid WHERE feature.square_id = square.square_id AND square.grid_id = grid.grid_id AND grid.grid_id = " . $world_id . ";";
+	$sql = "SELECT feature_name, feature.square_id, square_x, square_y, feature_type, feature_variant, feature_size FROM oddworld.feature, oddworld.square, oddworld.grid WHERE feature.square_id = square.square_id AND square.grid_id = grid.grid_id AND grid.grid_id = " . $world_id . " AND feature_type = '" . $type . "' ORDER BY feature_variant ASC, feature_size DESC;";
 	$results = doSearch($sql);
 	
 	if (count($results) > 0) {
 		
 		$text = "<table cellpadding=3 cellspacing=0 border=1>";
+		$current_type = "";
 		
-		foreach ($results as $feature) {		
-			$text = $text . "<tr><td><a href='" . $feature['feature_type'] . ".php?world=" . $world_id . "&square=" . $feature['square_id'] . "'>" . $feature['feature_name'] . "</a> [" . ucwords($feature['feature_variant']) . "] (" . $feature['square_x'] . ":" . $feature['square_y'] . ")</tr>";		
+		foreach ($results as $feature) {
+			if ($current_type <> strtolower($feature['feature_variant'])) {
+				$text = $text . "<tr bgcolor=#bbb><td colspan=3>" . ucwords($feature['feature_variant']) . " Farm(s)</tr>";
+				$current_type = strtolower($feature['feature_variant']);
+			}
+			$text = $text . "<tr><td>" . $feature['feature_name'] . "<td>(" . $feature['square_x'] . ":" . $feature['square_y'] . ")";
+			if ($feature['feature_type'] == "mine") {			
+				if ($feature['feature_size'] > 0) {
+					$text = $text . "<td>Working (" . $feature['feature_size'] . ")";
+				} else {
+					$text = $text . "<td bgcolor=#ccc align=center><font color=#fff>Abandoned</font>";
+				}
+			} else {
+				if ($feature['feature_size'] == 20) {
+					$text = $text . "<td align=center>Working";
+				} else {
+					$remaining = 20 - $feature['feature_size'];
+					$text = $text . "<td bgcolor=#ccc><font color=#fff>Ready in " . $remaining . "</font>";
+				}
+			}
+			
+			$text = $text . "</tr>";		
 		}
 		
 		$text = $text . "</table>";
@@ -238,6 +259,8 @@ function featureList($world_id) {
 	} else {
 		$text = "There are no features to display.";
 	}
+	
+	$text = $text . "<p><a href='world.php?world=" . $world_id . "'>Back</a>";
 	
 	return $text;
 	

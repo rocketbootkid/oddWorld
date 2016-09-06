@@ -108,19 +108,16 @@ function drawGrid($grid_id) {
 			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=clear&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Clear Forest'></a>";
 		
 		} elseif ($square['square_type'] == 'land') { # Land
-			# Determine if you can afford a farm
-			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=farm&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm'></a>";
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=land&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm'></a>";
 		
 		} elseif ($square['square_type'] == 'farm') { # Farm
-			$farm_name = getFeatureName($square['square_id']);
-			echo "<td><a href='farm.php?world=" . $_GET['world'] . "&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View " . $farm_name . "'></a>";
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=farm&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Farm'></a>";
 		
 		} elseif ($square['square_type'] == 'mountain') { # Mountain
-			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine'></a>";
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=mountain&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine'></a>";
 
 		} elseif ($square['square_type'] == 'mine') { # Mine
-			$mine_name = getFeatureName($square['square_id']);
-			echo "<td><a href='mine.php?world=" . $_GET['world'] . "&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View " . $mine_name . "'></a>";
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Mine'></a>";
 		
 		} else { # Nothing special
 			echo "<td><a href=''><img src='../images/" . $square['square_type'] . ".png' title='" . $square['square_x'] . "," . $square['square_y'] . ": " . $square['square_type'] . "'></a>";

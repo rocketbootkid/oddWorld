@@ -1,10 +1,10 @@
 <?php
 
-	include('mysql_functions.php');
-	include('grid_functions.php');
-	include('feature_functions.php');
-	include('log_functions.php');
-	include('tick_functions.php');
+	include('functions/mysql_functions.php');
+	include('functions/grid_functions.php');
+	include('functions/feature_functions.php');
+	include('functions/log_functions.php');
+	include('functions/tick_functions.php');
 	
 	if (isset($_GET['world']) || isset($_COOKIE['world'])) {
 		
@@ -38,8 +38,8 @@
 		echo "Select World.";
 	}
 	
-	displayLog();
+	#displayLog();
 	
-	#header('Refresh: 5; URL=tick.php');
+	header('Refresh: 5; URL=tick.php');
 
 ?>
