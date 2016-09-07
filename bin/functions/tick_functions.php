@@ -105,7 +105,7 @@ function manageFeatureLife($world_id) {
 	manageReforestation($world_id);
 	
 	# Increase size of towns by 1
-	
+	managePopulation($world_id);
 	
 }
 
@@ -121,7 +121,7 @@ function manageReforestation($world_id) {
 	foreach ($results as $land) {
 		
 		srand();
-		if (rand(1, 40) == 1) {
+		if (rand(1, 60) == 1) {
 		
 			$dml = "UPDATE oddworld.square SET square_type = 'forest' WHERE square_id = " . $land['square_id'] . ";";
 			$status = doInsert($dml);
@@ -176,6 +176,29 @@ function manageMineLife($world_id) {
 			writeLog("manageMineLife(): Mine life updated!");
 		} else {
 			writeLog("manageMineLife(): ERROR: Mine life not updated!");
+		}		
+		
+	}
+	
+}
+
+function manageTownLife($world_id) {
+	
+	# This function will manage the maturing of Towns
+	writeLog("manageTownLife()");	
+	
+	$sql = "SELECT feature_id FROM oddworld.feature, oddworld.square WHERE feature_size < 100 AND feature_type = 'town' AND square.square_id = feature.square_id AND square.grid_id = " . $world_id . ";";
+	$results = doSearch($sql);
+	writeLog("manageEconomy(): Towns: " . count($results));
+	
+	foreach ($results as $town) {
+		
+		$dml = "UPDATE oddworld.feature SET feature_size = feature_size + 1 WHERE feature_id = " . $town['feature_id'] . ";";
+		$status = doInsert($dml);
+		if ($status == TRUE) {
+			writeLog("manageTownLife(): Town population updated!");
+		} else {
+			writeLog("manageTownLife(): ERROR: Town population not updated!");
 		}		
 		
 	}

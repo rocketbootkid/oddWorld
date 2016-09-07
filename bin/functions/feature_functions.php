@@ -97,6 +97,67 @@ function createMine($square_id, $world_id) {
 
 }
 
+function createTown($world_id, $square_id) {
+	
+	# This function will create a town
+	writeLog("createTown(): Square ID: " . $square_id);
+	
+	$square_type = getSquareType($square_id);
+	writeLog("createTown(): Square Type: " . $square_type);
+	
+	if ($square_type == "land" && canIAffordIt('town', $world_id) == 1) {
+	
+		$dml = "UPDATE oddworld.square SET square_type = 'town' WHERE square_id = " . $square_id . ";";
+		$status = doInsert($dml);
+		if ($status == TRUE) {
+			writeLog("createTown(): Town created!");
+		} else {
+			writeLog("createTown(): ERROR: Town not created!");
+		}
+		
+		# Create farm feature
+		$feature_name = generateFeatureName('town');
+		$dml = "INSERT INTO oddworld.feature (feature_type, feature_name, square_id, feature_size) VALUES ('town', '" . $feature_name . "', " . $square_id . ", 1);";
+		$status = doInsert($dml);
+		if ($status == TRUE) {
+			writeLog("createTown(): Town feature created!");
+		} else {
+			writeLog("createTown(): ERROR: Town feature not created!");
+		}
+		
+		# Reduce funds based on number of features of this type already in existence
+		buyFeature('town', $world_id);
+			
+	} else {
+		writeLog("createTown(): ERROR: Not a land square, or can't afford it.");
+		writeEvent("Town not created! You can't afford it :-(");
+	}		
+	
+	
+	
+}
+
+function displayTown($square_id, $world_id) {
+
+	#HEAD:Displays town information
+	
+	writeLog("displayTown()");
+	$text = "";
+	
+	$sql = "SELECT * FROM oddworld.feature WHERE square_id = " . $square_id . ";";
+	$results = doSearch($sql);
+	
+	$text = $text . "<table cellpadding=3 cellspacing=1 border=1 align=center>";
+	$text = $text . "<tr><td colspan=2 align=center><img src='../images/" . $results[0]['feature_type'] . ".png' width=50px height=50px></tr>";
+	$text = $text . "<tr><td colspan=2 align=center><h2>" . $results[0]['feature_name'] . "</h2></tr>";
+	$text = $text . "<tr><td>Population<td>" . $results[0]['feature_size'] . "</tr>";
+	$text = $text . "<tr><td colspan=2 align=center><a href='world.php?world=" . $world_id . "'>Back</a>";
+	$text = $text . "</table>";
+
+	return $text;
+	
+}
+
 function displayMine($square_id, $world_id) {
 
 	#HEAD:Displays mine information
@@ -149,6 +210,27 @@ function displayFarm($square_id, $world_id) {
 	}
 	
 	$text = $text . "<tr><td colspan=2 align=center><a href='world.php?world=" . $world_id . "'>Back</a>";
+	$text = $text . "</table>";
+
+	return $text;
+	
+}
+
+function chooseFarmOrTown($world_id, $square_tpye, $square_id) {
+	
+	#HEAD:Chooses farm type
+	writeLog("chooseFarmOrTown()");
+	
+	$text = "";
+	
+	$link = "feature.php?world=" . $world_id . "&square=" . $square_id;
+	
+	$text = $text . "<table cellpadding=3 cellspacing=1 border=1 align=center>";
+	$text = $text . "<h2 align=center>Choose to build a Farm or a Town</h2>";
+	$text = $text . "<tr><td colspan=2 align=center><a href='" . $link . "&found=town'>Found Town</a></tr>";
+	$text = $text . "<tr><td colspan=2 align=center><strong>OR</strong></tr>";
+	$text = $text . "<tr><td valign=top colspan=2 align=center>Choose a Farm Type</tr>";
+	$text = $text . "<tr><td align=right><a href='" . $link . "&choice=beef'>Beef</a><br/><a href='" . $link . "&choice=wool'>Sheep</a><br/><a href='" . $link . "&choice=milk'>Dairy</a><td><a href='" . $link . "&choice=wheat'>Wheat</a><br/><a href='" . $link . "&choice=potato'>Potatoes</a><br/><a href='" . $link . "&choice=corn'>Corn</a><br/></tr>";
 	$text = $text . "</table>";
 
 	return $text;
@@ -242,6 +324,8 @@ function featureList($world_id, $type) {
 				} else {
 					$text = $text . "<td bgcolor=#ccc align=center><font color=#fff>Abandoned</font>";
 				}
+			} elseif ($feature['feature_type'] == "town") {			
+				$text = $text . "<td>Population: " . $feature['feature_size'];
 			} else {
 				if ($feature['feature_size'] == 20) {
 					$text = $text . "<td align=center>Working";
@@ -296,6 +380,8 @@ function calculateFeatureCost($feature_type, $world_id) {
 		$cost = 400 + (40 * $feature_count);
 	} elseif ($feature_type == 'mine') {
 		$cost = 1000 + (100 * $feature_count);
+	} elseif ($feature_type == 'town') {
+		$cost = 50000 + (10000 * $feature_count);
 	} else {
 		
 	}

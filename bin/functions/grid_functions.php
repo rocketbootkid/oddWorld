@@ -119,6 +119,9 @@ function drawGrid($grid_id) {
 		} elseif ($square['square_type'] == 'mine') { # Mine
 			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Mine'></a>";
 		
+		} elseif ($square['square_type'] == 'town') { # Town
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=town&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Town'></a>";
+		
 		} else { # Nothing special
 			echo "<td><a href=''><img src='../images/" . $square['square_type'] . ".png' title='" . $square['square_x'] . "," . $square['square_y'] . ": " . $square['square_type'] . "'></a>";
 		}
