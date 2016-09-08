@@ -36,7 +36,7 @@ function manageMineDisasters($world_id) {
 	# This function will manage mine disasters
 	writeLog("manageMineDisasters()");	
 	
-	$sql = "SELECT feature_id FROM oddworld.feature, oddworld.square, oddworld.grid WHERE feature_type = 'mine' AND feature.square_id = square.square_id AND square.grid_id = grid.grid_id AND grid.grid_id = " . $world_id . ";";
+	$sql = "SELECT feature_id FROM oddworld.feature, oddworld.square, oddworld.grid WHERE feature_size > 0 AND feature_type = 'mine' AND feature.square_id = square.square_id AND square.grid_id = grid.grid_id AND grid.grid_id = " . $world_id . ";";
 	$results = doSearch($sql);
 	writeLog("manageMineDisasters(): Mines: " . count($results));
 	
@@ -45,7 +45,7 @@ function manageMineDisasters($world_id) {
 		srand();
 		if (rand(1, 20) == 1) {
 		
-			$dml = "UPDATE oddworld.feature SET feature_size = feature_size - 250 WHERE feature_id = " . $mine['feature_id'] . ";";
+			$dml = "UPDATE oddworld.feature SET feature_size = feature_size / 2 WHERE feature_id = " . $mine['feature_id'] . ";";
 			$status = doInsert($dml);
 			if ($status == TRUE) {
 				writeLog("manageMineDisasters(): Cave life reduced!");
@@ -87,13 +87,10 @@ function manageFarmDisasters($world_id) {
 	
 }
 
-function managePopulation() {
-	
-	# increase population of towns by 1 up to 100
-	
-}
-
 function manageFeatureLife($world_id) {
+	
+	# Increase size of towns by 1
+	manageTownLife($world_id);
 	
 	# Age farms until 20
 	manageFarmLife($world_id);
@@ -103,9 +100,6 @@ function manageFeatureLife($world_id) {
 	
 	# Land randomly turns back to forest
 	manageReforestation($world_id);
-	
-	# Increase size of towns by 1
-	managePopulation($world_id);
 	
 }
 
@@ -279,7 +273,7 @@ function fluctuateResource($min, $max, $phase) {
 	
 }
 
-function logPrices($arrPrices) {
+function logPrices($world_id, $arrPrices) {
 	
 	$text = "";
 	
@@ -289,7 +283,7 @@ function logPrices($arrPrices) {
 	$text = substr($text, 0, strlen($text)-1);
 	$text = $text . "\n";
 	
-	$file = fopen('logs/prices.log', 'a');
+	$file = fopen('logs/World_' . $world_id . '_prices.log', 'a');
 	fwrite($file, $text);
 	fclose($file);
 		

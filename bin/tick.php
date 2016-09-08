@@ -21,7 +21,7 @@
 		
 		# Handle economic changes	
 		$arrPrices = generatePrices();
-		logPrices($arrPrices); # Log prices to CSV
+		logPrices($world_id, $arrPrices); # Log prices to CSV
 		
 		# Handle farm maturity
 		# Handle decrease of mine remaining

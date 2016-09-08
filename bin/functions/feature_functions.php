@@ -89,10 +89,14 @@ function createMine($square_id, $world_id) {
 		
 		# Reduce funds based on number of features of this type already in existence
 		buyFeature('mine', $world_id);
+		
+		return 1;
 			
 	} else {
 		writeLog("createMine(): ERROR: Not a mountain square, or can't afford it!");
 		writeEvent("Mine not created! You can't afford it :-(");
+		
+		return 0;
 	}	
 
 }
@@ -169,7 +173,7 @@ function displayMine($square_id, $world_id) {
 	$results = doSearch($sql);
 	
 	$text = $text . "<table cellpadding=3 cellspacing=1 border=1 align=center>";
-	$text = $text . "<tr><td colspan=2 align=center><img src='../images/" . $results[0]['feature_type'] . ".png' width=50px height=50px></tr>";
+	$text = $text . "<tr><td colspan=2 align=center><img src='../images/" . $results[0]['feature_variant'] . ".png' width=50px height=50px></tr>";
 	$text = $text . "<tr><td colspan=2 align=center><h2>" . $results[0]['feature_name'] . "</h2></tr>";
 	$text = $text . "<tr><td>Type<td>" . ucwords($results[0]['feature_variant']) . "</tr>";
 	$text = $text . "<tr><td>Remaining<td>" . $results[0]['feature_size'] . "</tr>";
@@ -193,7 +197,7 @@ function displayFarm($square_id, $world_id) {
 	$link = "farm.php?world=" . $world_id . "&square=" . $square_id;
 	
 	$text = $text . "<table cellpadding=3 cellspacing=1 border=1 align=center>";
-	$text = $text . "<tr><td colspan=2 align=center><img src='../images/" . $results[0]['feature_type'] . ".png' width=50px height=50px></tr>";
+	$text = $text . "<tr><td colspan=2 align=center><img src='../images/" . $results[0]['feature_variant'] . ".png' width=50px height=50px></tr>";
 	$text = $text . "<tr><td colspan=2 align=center><h2>" . $results[0]['feature_name'] . "</h2></tr>";
 	
 	if ($results[0]['feature_variant'] == "") {
@@ -314,7 +318,9 @@ function featureList($world_id, $type) {
 		
 		foreach ($results as $feature) {
 			if ($current_type <> strtolower($feature['feature_variant'])) {
-				$text = $text . "<tr bgcolor=#bbb><td colspan=3>" . ucwords($feature['feature_variant']) . " Farm(s)</tr>";
+				$text = $text . "<tr bgcolor=#bbb><td>" . ucwords($feature['feature_variant']) . " " . ucwords($feature['feature_type']) . "(s)";
+				$text = $text . "<td colspan=2>" . commodityTrend($feature['feature_variant'], $world_id) . "</tr>";
+				$text = $text . "</tr>";
 				$current_type = strtolower($feature['feature_variant']);
 			}
 			$text = $text . "<tr><td>" . $feature['feature_name'] . "<td>(" . $feature['square_x'] . ":" . $feature['square_y'] . ")";
@@ -418,6 +424,42 @@ function canIAffordIt($feature_type, $world_id) {
 	} else {
 		return 0;
 	}
+	
+}
+
+function commodityTrend($commodity, $world_id) {
+	
+	# This function will return the most recent price of the commodity, and the recent trend
+	# Trend = (Average of last ten prices) - Current Price
+	writeLog("commodityTrend()");	
+	
+	$arrPrices = file('logs/World_' . $world_id . '_prices.log');
+	$rows = count($arrPrices);
+	writeLog("commodityTrend(): Rows: " . $rows);	
+	
+	# Need to convert commodity into an index
+	$arrCommodities = array('wool','corn','milk','beef','wheat','potato','iron','coal','gold','silver','copper','tin');
+	$commodityIndex = array_search($commodity, $arrCommodities);
+	writeLog("commodityTrend(): Index: " . $commodityIndex);	
+
+	$total_price = 0;
+	$current_price = 0;
+	
+	for ($p = $rows - 10; $p < $rows; $p++) {
+		$arrCurrentRow = explode(",", $arrPrices[$p]);
+		$current_price = $arrCurrentRow[$commodityIndex];
+		$total_price = $total_price + $current_price;
+	}
+	writeLog("commodityTrend(): Current Price for " . ucwords($commodity) . ": " . $current_price);
+	
+	$average = floor($total_price / 10);
+	writeLog("commodityTrend(): Average: " . $average);	
+	$trend = $current_price - $average;
+	writeLog("commodityTrend(): Trend: " . $trend);	
+	
+	$text = $current_price . " (" . $trend . ")";
+	
+	return $text;
 	
 }
 

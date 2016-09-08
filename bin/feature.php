@@ -51,8 +51,12 @@
 				echo displayTown($_GET['square'], $_GET['world']);
 				break;
 			case "mountain":
-				createMine($square_id, $world_id);
-				echo displayMine($_GET['square'], $_GET['world']);
+				$return = createMine($square_id, $world_id);
+				if ($return == 1) {
+					echo displayMine($_GET['square'], $_GET['world']);
+				} else {
+					echo "Can't afford it.";
+				}
 				break;
 			case "mine":
 				echo displayMine($_GET['square'], $_GET['world']);

@@ -105,22 +105,24 @@ function drawGrid($grid_id) {
 		}
 		
 		if ($square['square_type'] == 'forest') { # Forest
-			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=clear&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Clear Forest'></a>";
+			echo "<td><a href='world.php?world=" . $_GET['world'] . "&action=clear&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Clear Forest' width=25px height=25px></a>";
 		
 		} elseif ($square['square_type'] == 'land') { # Land
-			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=land&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm'></a>";
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=land&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Farm' width=25px height=25px></a>";
 		
 		} elseif ($square['square_type'] == 'farm') { # Farm
-			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=farm&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Farm'></a>";
+			$variant = getFeatureVariant($square['square_id']);
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=farm&square=" . $square['square_id'] . "'><img src='../images/" . $variant . ".png' title='ACTION: View Farm' width=25px height=25px></a>";
 		
 		} elseif ($square['square_type'] == 'mountain') { # Mountain
-			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=mountain&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine'></a>";
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=mountain&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: Create Mine' width=25px height=25px></a>";
 
 		} elseif ($square['square_type'] == 'mine') { # Mine
-			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=mine&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Mine'></a>";
+			$variant = getFeatureVariant($square['square_id']);
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=mine&square=" . $square['square_id'] . "'><img src='../images/" . $variant . ".png' title='ACTION: View Mine' width=25px height=25px></a>";
 		
 		} elseif ($square['square_type'] == 'town') { # Town
-			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=town&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Town'></a>";
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=town&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Town' width=25px height=25px></a>";
 		
 		} else { # Nothing special
 			echo "<td><a href=''><img src='../images/" . $square['square_type'] . ".png' title='" . $square['square_x'] . "," . $square['square_y'] . ": " . $square['square_type'] . "'></a>";
@@ -170,4 +172,21 @@ function addFunds($world_id, $amount) {
 	
 }
 
+function getFeatureVariant($square_id) {
+
+	# This function will return the current funds for the world
+	writeLog("getFeatureVariant()");	
+	
+	$sql = "SELECT feature_variant FROM oddworld.feature WHERE square_id = " . $square_id . ";";
+	$results = doSearch($sql);
+	
+	return $results[0]['feature_variant'];	
+		
+}
+
+function getCurrentTickFromFile() {
+	
+	return file_get_contents('logs/tick.txt');
+	
+}
 ?>
