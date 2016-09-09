@@ -385,7 +385,7 @@ function calculateFeatureCost($feature_type, $world_id) {
 	if ($feature_type == 'farm') {
 		$cost = 400 + (40 * $feature_count);
 	} elseif ($feature_type == 'mine') {
-		$cost = 1000 + (100 * $feature_count);
+		$cost = 10000 + (1000 * $feature_count);
 	} elseif ($feature_type == 'town') {
 		$cost = 50000 + (10000 * $feature_count);
 	} else {
@@ -432,7 +432,9 @@ function commodityTrend($commodity, $world_id) {
 	# This function will return the most recent price of the commodity, and the recent trend
 	# Trend = (Average of last ten prices) - Current Price
 	writeLog("commodityTrend()");	
-	
+	if (!file_exists('logs/World_' . $world_id . '_prices.log')) {
+		$file = fopen('logs/World_' . $world_id . '_prices.log', 'w+');
+	}
 	$arrPrices = file('logs/World_' . $world_id . '_prices.log');
 	$rows = count($arrPrices);
 	writeLog("commodityTrend(): Rows: " . $rows);	

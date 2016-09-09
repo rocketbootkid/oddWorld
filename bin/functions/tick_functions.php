@@ -283,7 +283,7 @@ function logPrices($world_id, $arrPrices) {
 	$text = substr($text, 0, strlen($text)-1);
 	$text = $text . "\n";
 	
-	$file = fopen('logs/World_' . $world_id . '_prices.log', 'a');
+	$file = fopen('logs/World_' . $world_id . '_prices.log', 'a+');
 	fwrite($file, $text);
 	fclose($file);
 		

@@ -142,11 +142,20 @@ function getSquareType($square_id) {
 	
 	# This function will return the type of the provided square
 	writeLog("getSquareType(): Square ID: " . $square_id);	
+		
+	return getSquareAttribute($square_id, 'square_type');
 	
-	$sql = "SELECT square_type FROM oddworld.square WHERE square_id = " . $square_id . ";";
+}
+
+function getSquareAttribute($square_id, $attribute) {
+	
+	# This function will return the attribute of the provided square
+	writeLog("getSquareAttribute()");	
+	
+	$sql = "SELECT " . $attribute . " FROM oddworld.square WHERE square_id = " . $square_id . ";";
 	$results = doSearch($sql);
 	
-	return $results[0]['square_type'];
+	return $results[0][$attribute];	
 	
 }
 
@@ -189,4 +198,24 @@ function getCurrentTickFromFile() {
 	return file_get_contents('logs/tick.txt');
 	
 }
+
+function getAdjacentSquares($square_id) {
+	
+	$coords = array('x' => getSquareCoordinates($square_id, 'square_x'), 
+					'y' => getSquareCoordinates($square_id, 'square_y')
+				);
+	
+	$x_min = $coords['x'] - 1;
+	$x_max = $coords['x'] + 1;
+	$y_min = $coords['y'] - 1;
+	$y_max = $coords['y'] + 1;
+	
+	$sql = "SELECT * FROM oddworld.square WHERE (square_x BETWEEN " . $x_min . " AND " . $x_max . ") AND (square_y BETWEEN " . $y_min . " AND " . $y_max . ") AND square_x != " . $square_x . " AND square_y != " . $square_y . ";";
+	
+	
+	
+	
+}
+
+
 ?>
