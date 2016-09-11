@@ -7,23 +7,32 @@ function clearForest($square_id, $world_id) {
 	# This function will clear a forest square
 	writeLog("clearForest(): Square ID: " . $square_id);
 	
-	$square_type = getSquareType($square_id);
-	writeLog("clearForest(): Square Type: " . $square_type);
-	
-	if ($square_type == "forest") {
-	
-		# Change square type
-		$dml = "UPDATE oddworld.square SET square_type = 'land' WHERE square_id = " . $square_id . ";";
-		$status = doInsert($dml);
+	# Change square type
+	$dml = "UPDATE oddworld.square SET square_type = 'land' WHERE square_id = " . $square_id . ";";
+	$status = doInsert($dml);
 
-		# Add funds
-		addFunds($world_id, 10);
-		
-		writeEvent("Forest cleared from Square " . $square_id);
-		
-	} else {
-		writeLog("clearForest(): ERROR: Square ID " . $square_id . " is not a forest square!");
-	}	
+	# Add funds
+	addFunds($world_id, 10);
+	
+	writeEvent("Forest cleared from Square " . $square_id);
+	
+}
+
+function fillWater($square_id, $world_id) {
+	
+	# This function will fill a water square
+	writeLog("fillWater(): Square ID: " . $square_id);
+	
+	# Change square type
+	$dml = "UPDATE oddworld.square SET square_type = 'land' WHERE square_id = " . $square_id . ";";
+	$status = doInsert($dml);
+
+	# Add funds
+	addFunds($world_id, 10);
+	
+	writeEvent("Water filled in " . $square_id);
+	
+	buyFeature('sea', $world_id);
 	
 }
 
@@ -220,7 +229,7 @@ function displayFarm($square_id, $world_id) {
 	
 }
 
-function chooseFarmOrTown($world_id, $square_tpye, $square_id) {
+function chooseFarmOrTown($world_id, $square_id) {
 	
 	#HEAD:Chooses farm type
 	writeLog("chooseFarmOrTown()");
@@ -235,6 +244,25 @@ function chooseFarmOrTown($world_id, $square_tpye, $square_id) {
 	$text = $text . "<tr><td colspan=2 align=center><strong>OR</strong></tr>";
 	$text = $text . "<tr><td valign=top colspan=2 align=center>Choose a Farm Type</tr>";
 	$text = $text . "<tr><td align=right><a href='" . $link . "&choice=beef'>Beef</a><br/><a href='" . $link . "&choice=wool'>Sheep</a><br/><a href='" . $link . "&choice=milk'>Dairy</a><td><a href='" . $link . "&choice=wheat'>Wheat</a><br/><a href='" . $link . "&choice=potato'>Potatoes</a><br/><a href='" . $link . "&choice=corn'>Corn</a><br/></tr>";
+	$text = $text . "</table>";
+
+	return $text;
+	
+}
+
+function chooseSeaAction($world_id, $square_id) {
+	
+	#HEAD:Chooses farm type
+	writeLog("chooseSeaAction()");
+	
+	$text = "";
+	
+	$link = "feature.php?world=" . $world_id . "&square=" . $square_id;
+	
+	$text = $text . "<table cellpadding=3 cellspacing=1 border=1 align=center>";
+	$text = $text . "<h2 align=center>Choose to Create Land or build Fish Farm</h2>";
+	$text = $text . "<tr><td colspan=2 align=center><a href='" . $link . "&option=land'>Create Land</a></tr>";
+	$text = $text . "<tr><td colspan=2 align=center><a href='" . $link . "&option=fish'>Create Fish Farm</a></tr>";
 	$text = $text . "</table>";
 
 	return $text;
@@ -289,15 +317,30 @@ function generateFeatureName($feature_type) {
 	
 }
 
+function getFeatureAttribute($square_id, $attribute) {
+	
+	# This function will return the desired attribute of the feature at the provided square
+	writeLog("getFeatureAttribute(): Square ID: " . $square_id);	
+	
+	$sql = "SELECT " . $attribute . " FROM oddworld.feature WHERE square_id = " . $square_id . ";";
+	$results = doSearch($sql);
+	$count = count($results);
+	writeLog("getFeatureAttribute(): Results: " . count($results));
+	if ($count != 0) {
+		writeLog("getFeatureAttribute(): " . $attribute . ": " . $results[0][$attribute]);
+		return $results[0][$attribute];	
+	} else {
+		return "";
+	}
+		
+}
+
 function getFeatureName($square_id) {
 	
 	# This function will return the name of the feature at the provided square
 	writeLog("getFeatureName(): Square ID: " . $square_id);	
 	
-	$sql = "SELECT feature_name FROM oddworld.feature WHERE square_id = " . $square_id . ";";
-	$results = doSearch($sql);
-	
-	return $results[0]['feature_name'];	
+	return getFeatureAttribute($square_id, "name");
 		
 }
 
@@ -319,7 +362,7 @@ function featureList($world_id, $type) {
 		foreach ($results as $feature) {
 			if ($current_type <> strtolower($feature['feature_variant'])) {
 				$text = $text . "<tr bgcolor=#bbb><td>" . ucwords($feature['feature_variant']) . " " . ucwords($feature['feature_type']) . "(s)";
-				$text = $text . "<td colspan=2>" . commodityTrend($feature['feature_variant'], $world_id) . "</tr>";
+				$text = $text . "<td colspan=3>" . commodityTrend($feature['feature_variant'], $world_id) . "</tr>";
 				$text = $text . "</tr>";
 				$current_type = strtolower($feature['feature_variant']);
 			}
@@ -340,8 +383,8 @@ function featureList($world_id, $type) {
 					$text = $text . "<td bgcolor=#ccc><font color=#fff>Ready in " . $remaining . "</font>";
 				}
 			}
-			
-			$text = $text . "</tr>";		
+			$text = $text . "<td>+" . countAdjacentFeatures($feature['square_id'], 'variant', $feature['feature_variant'], $world_id);
+			$text = $text . "</tr>";
 		}
 		
 		$text = $text . "</table>";
@@ -388,6 +431,8 @@ function calculateFeatureCost($feature_type, $world_id) {
 		$cost = 10000 + (1000 * $feature_count);
 	} elseif ($feature_type == 'town') {
 		$cost = 50000 + (10000 * $feature_count);
+	} elseif ($feature_type == 'sea') {
+		$cost = 1000 + (100 * $feature_count);
 	} else {
 		
 	}
@@ -405,6 +450,29 @@ function countFeatures($feature_type, $world_id) {
 	$results = doSearch($sql);
 	
 	return $results[0]['count(*)'];
+	
+}
+
+function countAdjacentFeatures($square_id, $TypeVariant, $varortype, $grid_id) {
+	
+	# This function will determine how many adjacent squares contain the desired feature type or variant
+	writeLog("countAdjacentFeatures()");
+	
+	$arrSquares = getAdjacentSquares($square_id, $grid_id);
+	$count = 0;
+	
+	foreach ($arrSquares as $square) {
+		if ($TypeVariant == "type") { # Type
+			$type = getFeatureAttribute($square['square_id'], "feature_type");
+			if ($type == $varortype) { $count++; };
+		} else { # Variant
+			$variant = getFeatureAttribute($square['square_id'], "feature_variant");
+			if ($variant == $varortype) { $count++; };	
+		}
+		
+	}
+	
+	return $count;
 	
 }
 

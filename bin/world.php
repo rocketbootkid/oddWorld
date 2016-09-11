@@ -27,9 +27,12 @@
 	echo displayEvents();
 	
 	if (isset($_GET['world'])) {
+		
+		setcookie('world', $_GET['world']);
+		
 		echo "<table cellpadding=5 cellspacing=0 border=0 align=center>";
 		echo "<tr><td valign=top>";
-		echo "<p>Year: " . getCurrentTickFromFile();
+		echo "<p>Year: " . getCurrentTickFromFile($_GET['world']);
 		echo "<p>Current Funds: " . getCurrentFunds($_GET['world']);
 		echo "<p>View:<br/><a href='farms.php?world=" . $_GET['world'] . "'>Farms</a>";
 		echo "<br/><a href='mines.php?world=" . $_GET['world'] . "'>Mines</a>";
@@ -39,6 +42,7 @@
 		echo "<p>Next Mine: " . calculateFeatureCost('mine', $_GET['world']);
 		echo "<p><a href='world.php?world=" . $_GET['world'] . "'>Refresh</a>";
 		echo "<p><a href='tick.php?world=" . $_GET['world'] . "' target='_blank'>Tick Page</a>";
+		echo "<p><a href='select.php'>World Select</a>";
 		echo "<td valign=top>";
 		echo drawGrid($_GET['world']);
 		echo "</tr>";

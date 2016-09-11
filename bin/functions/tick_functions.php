@@ -4,12 +4,13 @@ $tick = 0;
 
 function tick() {
 	
-	$time = file('logs/tick.txt');
+	$world_id = $_COOKIE['world'];
+	$time = file('logs/World' . $world_id . '/tick.txt');
 	$current_tick = $time[0];
 	$new_tick = $current_tick + 1;
 	$GLOBALS['tick'] = $new_tick;
 	writeLog("tick(): New Tick: " . $new_tick);
-	$file = fopen('logs/tick.txt', 'w');
+	$file = fopen('logs/World' . $world_id . '/tick.txt', 'w');
 	fwrite($file, $new_tick);
 	fclose($file);
 	
@@ -215,6 +216,10 @@ function manageEconomy($arrPrices, $world_id) {
 		
 		$farm_type = strtolower($farm['feature_variant']); # Get the type of farm
 		$value = $arrPrices[$farm_type]; # Get the current value of that crop
+		$adjacent = countAdjacentFeatures($farm['square_id'], 'variant', $farm['feature_variant'], $world_id);
+		if ($adjacent > 0) {
+			$value = $value * ($adjacent / 10);
+		}
 		writeLog("manageEconomy(): " . $farm_type . ": " . $value);
 		
 		$income = $income + $value;	# add that to total income
@@ -230,6 +235,10 @@ function manageEconomy($arrPrices, $world_id) {
 		$mine_type = strtolower($mine['feature_variant']); # Get the type of mine
 		$value = $arrPrices[$mine_type]; # Get the current value of that mineral
 		writeLog("manageEconomy(): " . $mine_type . ": " . $value);
+		$adjacent = countAdjacentFeatures($mine['square_id'], 'variant', $mine['feature_variant'], $world_id);
+		if ($adjacent > 0) {
+			$value = $value * ($adjacent / 10);
+		}
 		
 		$income = $income + $value;	# add that to total income
 	}
@@ -281,7 +290,7 @@ function logPrices($world_id, $arrPrices) {
 		$text = $text . $price . ",";	
 	}
 	$text = substr($text, 0, strlen($text)-1);
-	$text = $text . "\n";
+	$text = "\n" . $text;
 	
 	$file = fopen('logs/World_' . $world_id . '_prices.log', 'a+');
 	fwrite($file, $text);

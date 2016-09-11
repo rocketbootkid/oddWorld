@@ -1,13 +1,28 @@
+<html>
+
+<head>
+<title>OddWorld</title>
+</head>
+
+<body>
+
 <?php
 
 	include('functions/mysql_functions.php');
 	include('functions/grid_functions.php');
 	include('functions/feature_functions.php');
 	include('functions/log_functions.php');
-	include('functions/tick_functions.php');
-
-	echo countAdjacentFeatures(69065, 'variant', 'beef', 33);
-
+	
+	if (isset($_GET['create'])) {
+		generateNewGrid();
+	}
+	
+	echo worldList();
+	
 	displayLog();
 
 ?>
+
+</body>
+
+</html>

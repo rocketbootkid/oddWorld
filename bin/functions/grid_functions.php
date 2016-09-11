@@ -1,9 +1,38 @@
 <?php
 
-function generateNewGrid($type, $size, $name) {
+function worldList() {
+	
+	# Display Lists of World Grids
+	$sql = "SELECT * FROM oddworld.grid ORDER BY grid_id ASC;";
+	$results = doSearch($sql);
+	
+	$text = "";
+	
+	$text = "<table cellpadding=4 cellspacing=1 border=1>";
+	
+	foreach ($results as $world) {
+		
+		$text = $text . "<tr><td align=center>" . $world['grid_id'] . "<td><a href='world.php?world=" . $world['grid_id'] . "'>" . $world['grid_name'] . " (" . $world['grid_size'] . ")</tr>";
+		
+	}
+
+	# Link to generate new World grid
+	$text = $text . "<tr><td colspan=2><a href='select.php?create'>Create New World</a></tr>";
+
+	$text = $text . "</table>";	
+	
+	return $text;
+	
+}
+
+function generateNewGrid() {
 	
 	# This function will generate a new grid, returns grid_id
 	writeLog("generateNewGrid()");
+	
+	$name = generateGridName();
+	$type = 'world';
+	$size = 50;
 	
 	# Create Grid Record
 	$dml = "INSERT INTO oddworld.grid (grid_type, grid_size, grid_name, grid_money) VALUES ('" . $type . "', " . $size . ", '" . $name . "', 500);";
@@ -18,7 +47,20 @@ function generateNewGrid($type, $size, $name) {
 	# Generate Grid (passing grid_id)
 	createGrid($grid_id, $size);
 	
-	drawGrid($grid_id);
+	# Create New Grid Directory
+	mkdir("logs/World" . $grid_id, 0700);
+	
+	# Create Tick File
+	$tickfile = fopen("logs/World" . $grid_id . "/tick.txt", "w");
+	$text = "0\n";
+	fwrite($tickfile, $text);
+	fclose($tickfile);
+	
+	# Create Price Log File
+	$pricelog = fopen("logs/World" . $grid_id . "/prices.log", "w");
+	$text = "wool,corn,milk,beef,wheat,potatoes,iron,coal,gold,silver,copper,tin\n";
+	fwrite($pricelog, $text);
+	fclose($pricelog);
 	
 }
 
@@ -39,6 +81,46 @@ function createGrid($grid_id, $size) {
 					
 		}
 	}
+	
+}
+
+function generateGridName() {
+	
+	#HEAD:Generates a feature name
+	writeLog("generateGridName()");
+	
+	srand();
+	$syllables = rand(1,2);
+	$name = "";
+	
+	for ($s = 0; $s < $syllables; $s++) {
+		
+		$consonant = "a";
+		while ($consonant == "a" || $consonant == "e"|| $consonant == "i" || $consonant == "o" || $consonant == "u") {
+			$consonant = chr(rand(97, 122));
+		}
+		
+		$vowel = "x";
+		while ($vowel != "a" && $vowel != "e" && $vowel != "i" && $vowel != "o" && $vowel != "u") {
+			$vowel = chr(rand(97, 122));
+		}
+
+		$vowel2 = "x";
+		while ($vowel2 != "a" && $vowel2 != "e" && $vowel2 != "i" && $vowel2 != "o" && $vowel2 != "u") {
+			$vowel2 = chr(rand(97, 122));
+		}
+		
+		$name = $name . $consonant . $vowel . $vowel2;
+		$consonant = "a";
+		$vowel = "x";
+		
+	}
+	
+	$name = $name . "ria";
+	
+	writeLog("generateGridName(): Name: " . $name);
+	
+	return ucwords($name);	
 	
 }
 
@@ -124,6 +206,9 @@ function drawGrid($grid_id) {
 		} elseif ($square['square_type'] == 'town') { # Town
 			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=town&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Town' width=25px height=25px></a>";
 		
+		} elseif ($square['square_type'] == 'sea') { # Sea
+			echo "<td><a href='feature.php?world=" . $_GET['world'] . "&type=sea&square=" . $square['square_id'] . "'><img src='../images/" . $square['square_type'] . ".png' title='ACTION: View Sea' width=25px height=25px></a>";
+		
 		} else { # Nothing special
 			echo "<td><a href=''><img src='../images/" . $square['square_type'] . ".png' title='" . $square['square_x'] . "," . $square['square_y'] . ": " . $square['square_type'] . "'></a>";
 		}
@@ -138,15 +223,6 @@ function drawGrid($grid_id) {
 	
 }
 
-function getSquareType($square_id) {
-	
-	# This function will return the type of the provided square
-	writeLog("getSquareType(): Square ID: " . $square_id);	
-		
-	return getSquareAttribute($square_id, 'square_type');
-	
-}
-
 function getSquareAttribute($square_id, $attribute) {
 	
 	# This function will return the attribute of the provided square
@@ -156,6 +232,26 @@ function getSquareAttribute($square_id, $attribute) {
 	$results = doSearch($sql);
 	
 	return $results[0][$attribute];	
+	
+}
+
+function getSquareType($square_id) {
+	
+	# This function will return the type of the provided square
+	writeLog("getSquareType(): Square ID: " . $square_id);	
+		
+	return getSquareAttribute($square_id, 'square_type');
+	
+}
+
+function getSquareCoordinates($square_id) {
+	
+	# This function will return the coordinates of the provided square
+	writeLog("getSquareCoordinates(): Square ID: " . $square_id);	
+	$arrCoords['x'] = getSquareAttribute($square_id, 'square_x');
+	$arrCoords['y'] = getSquareAttribute($square_id, 'square_y');
+		
+	return $arrCoords;
 	
 }
 
@@ -193,27 +289,29 @@ function getFeatureVariant($square_id) {
 		
 }
 
-function getCurrentTickFromFile() {
+function getCurrentTickFromFile($world_id) {
 	
-	return file_get_contents('logs/tick.txt');
+	return file_get_contents('logs/World' . $world_id . '/tick.txt');
 	
 }
 
-function getAdjacentSquares($square_id) {
+function getAdjacentSquares($square_id, $grid_id) {
+
+	# This function will return an array of squares adjacent to the provided square
+	writeLog("getAdjacentSquares()");	
 	
-	$coords = array('x' => getSquareCoordinates($square_id, 'square_x'), 
-					'y' => getSquareCoordinates($square_id, 'square_y')
-				);
+	$coords = getSquareCoordinates($square_id);
 	
 	$x_min = $coords['x'] - 1;
 	$x_max = $coords['x'] + 1;
 	$y_min = $coords['y'] - 1;
 	$y_max = $coords['y'] + 1;
 	
-	$sql = "SELECT * FROM oddworld.square WHERE (square_x BETWEEN " . $x_min . " AND " . $x_max . ") AND (square_y BETWEEN " . $y_min . " AND " . $y_max . ") AND square_x != " . $square_x . " AND square_y != " . $square_y . ";";
+	$sql = "SELECT square_id FROM oddworld.square WHERE (square_x >= " . $x_min . " AND square_x <= " . $x_max . ") AND (square_y >= " . $y_min . " AND square_y <= " . $y_max . ") AND square_id != " . $square_id . " AND grid_id = " . $grid_id . ";";
+	$results = doSearch($sql);
+	writeLog("getAdjacentSquares(): Squares: " . count($results));
 	
-	
-	
+	return $results;
 	
 }
 

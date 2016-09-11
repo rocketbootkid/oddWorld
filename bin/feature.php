@@ -22,9 +22,15 @@
 		createFarm($square_id, $world_id);
 		chooseFarmType($square_id, $world_id, $choice);
 		$url = "farms.php?world=" . $world_id;
-		
-		#displayLog();
-		
+		header("Location: " . $url);
+	}
+	
+	# Fill Water
+	if (isset($_GET['option']) && $_GET['option'] == "land") {
+		$world_id = $_GET['world'];
+		$square_id = $_GET['square'];
+		clearForest($square_id, $world_id);
+		$url = "world.php?world=" . $world_id;		
 		header("Location: " . $url);
 	}
 	
@@ -41,7 +47,7 @@
 				break;
 			case "land":
 				# Offer two choices; create farm, or create town
-				echo chooseFarmOrTown($world_id, $square_type, $square_id);
+				echo chooseFarmOrTown($world_id, $square_id);
 				break;
 			case "farm":
 				# Determine if the farm variant needs to be selected
@@ -60,6 +66,9 @@
 				break;
 			case "mine":
 				echo displayMine($_GET['square'], $_GET['world']);
+				break;		
+			case "sea":
+				echo chooseSeaAction($world_id, $square_id);
 				break;		
 		}
 
